@@ -1,7 +1,9 @@
-import uuid
 from os import path
 
 from django.db import models
+
+from project.constants import max_digits, decimal_places
+from project.mixins.models import PKMixin
 
 
 def products_image(instance, filename):
@@ -9,8 +11,7 @@ def products_image(instance, filename):
     return f'products/images/{str(instance.pk)}{extension}'
 
 
-class Category(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class Category(PKMixin):
     name = models.CharField(max_length=255)
     description = models.TextField(
         blank=True,
@@ -20,12 +21,9 @@ class Category(models.Model):
         upload_to=products_image,
         null=True
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 
-class Product(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class Product(PKMixin):
     name = models.CharField(max_length=255)
     description = models.TextField(
         blank=True,
@@ -37,5 +35,15 @@ class Product(models.Model):
     )
     sku = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    categories = models.ManyToManyField(Category, blank=True)
+    products = models.ManyToManyField('products.Product', blank=True)
+    price = models.DecimalField(
+        max_digits=max_digits,
+        decimal_places=decimal_places)
+
+
+# class Order(models.Model):
+#    order_number = models.PositiveIntegerField(max_length=255)
+#    is_paid = models.BooleanField(default=False)
+#    is_active = models.BooleanField(default=True)
+    # user = models.ForeignKey()
